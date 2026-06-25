@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% set active_nav = "contas_fixas" %}
+
+{% block title %}Contas Fixas - App Financeiro{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Contas Fixas</h1>
+  <button class="btn btn-primary" onclick="document.getElementById('modalContaFixa').classList.add('show')">+ Nova</button>
+</div>
+
+<form action="{{ url_for('contas_fixas.lancar_todas') }}" method="POST" style="margin-bottom:16px" data-loading>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+    <label style="font-size:0.8125rem;color:var(--text-secondary)">Lançar contas do mês:</label>
+    <select name="mes">
+      {% for m in range(1, 13) %}
+      <option value="{{ m }}" {{ 'selected' if m == hoje.month }}>{{ ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'][m-1] }}</option>
+      {% endfor %}
+    </select>
+    <input type="number" name="ano" value="{{ hoje.year }}" style="width:80px">
+    <button type="submit" class="btn btn-primary btn-sm">Lançar Todas</button>
+  </div>
+</form>
+
+<div class="card">
+  {% if contas %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Descrição</th>
+          <th>Categoria</th>
+          <th>Valor Mensal</th>
+          <th>Dia Vencimento</th>
+          <th>Total Anual</th>
+          <th style="text-align:center">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in contas %}
+        <tr>
+          <td><strong>{{ c.descricao }}</strong></td>
+          <td>{{ c.categoria.nome }}</td>
+          <td>R$ {{ "%.2f"|format(c.valor) }}</td>
+          <td>Dia {{ c.dia_vencimento }}</td>
+          <td>R$ {{ "%.2f"|format(c.total_anual) }}</td>
+          <td style="text-align:center">
+            <button class="btn btn-ghost btn-sm" onclick="editarConta({{ c.id }}, '{{ c.descricao }}', {{ c.valor }}, {{ c.dia_vencimento }}, {{ c.categoria_id }})">Editar</button>
+            <form action="{{ url_for('contas_fixas.excluir', id=c.id) }}" method="POST" style="display:inline" data-confirm="Excluir esta conta fixa?">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-ghost btn-sm">Excluir</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">📋</div>
+    <h3>Nenhuma conta fixa</h3>
+    <p>Adicione contas como aluguel, assinaturas, etc.</p>
+  </div>
+  {% endif %}
+</div>
+
+<!-- MODAL NOVA CONTA FIXA -->
+<div class="modal-overlay" id="modalContaFixa">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modalContaTitle">Nova Conta Fixa</h2>
+      <button class="modal-close" onclick="document.getElementById('modalContaFixa').classList.remove('show')">&times;</button>
+    </div>
+    <form id="formContaFixa" action="{{ url_for('contas_fixas.criar') }}" method="POST" data-loading>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="conta_id" id="conta_id" value="">
+
+      <div class="form-group">
+        <label>Descrição</label>
+        <input type="text" name="descricao" id="conta_descricao" required maxlength="200" placeholder="Ex: Aluguel">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Valor (R$)</label>
+          <input type="number" name="valor" id="conta_valor" step="0.01" min="0.01" required placeholder="0,00">
+        </div>
+        <div class="form-group">
+          <label>Dia Vencimento</label>
+          <input type="number" name="dia_vencimento" id="conta_dia" min="1" max="31" required value="1">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Categoria</label>
+        <select name="categoria_id" id="conta_categoria" required>
+          {% for cat in categorias %}
+          <option value="{{ cat.id }}">{{ cat.nome }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('modalContaFixa').classList.remove('show')">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function editarConta(id, descricao, valor, dia, catId) {
+  document.getElementById('conta_id').value = id;
+  document.getElementById('conta_descricao').value = descricao;
+  document.getElementById('conta_valor').value = valor;
+  document.getElementById('conta_dia').value = dia;
+  document.getElementById('conta_categoria').value = catId;
+  document.getElementById('modalContaTitle').textContent = 'Editar Conta Fixa';
+  document.getElementById('formContaFixa').action = '/contas-fixas/editar/' + id;
+  document.getElementById('modalContaFixa').classList.add('show');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% set active_nav = "dashboard" %}
+
+{% block title %}Dashboard - App Financeiro{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Dashboard <small>{{ mes_atual }}/{{ ano_atual }}</small></h1>
+</div>
+
+<div class="summary-grid">
+  <div class="summary-card receita">
+    <span class="label">Receitas</span>
+    <span class="value">R$ {{ "%.2f"|format(receitas) }}</span>
+  </div>
+  <div class="summary-card despesa">
+    <span class="label">Despesas</span>
+    <span class="value">R$ {{ "%.2f"|format(despesas) }}</span>
+  </div>
+  <div class="summary-card saldo {% if saldo < 0 %}negativo{% endif %}">
+    <span class="label">Saldo</span>
+    <span class="value">R$ {{ "%.2f"|format(saldo) }}</span>
+    <span class="sub">{{ 'Negativo' if saldo < 0 else 'Positivo' }}</span>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:20px">
+  <h3 style="font-size:0.9375rem;font-weight:600;margin-bottom:16px">Últimos 6 Meses</h3>
+  <div class="monthly-grid">
+    {% for m in meses %}
+    <div class="month-bar">
+      <div class="bar-stack">
+        {% set max_val = (m.receitas if m.receitas > m.despesas else m.despesas) or 1 %}
+        {% set rec_pct = (m.receitas / max_val * 80)|round|int %}
+        {% set desp_pct = (m.despesas / max_val * 80)|round|int %}
+        <div class="bar-receita" style="height:{{ rec_pct }}px"></div>
+        <div class="bar-despesa" style="height:{{ desp_pct }}px"></div>
+        <div style="flex:1"></div>
+      </div>
+      <span class="bar-label">{{ m.mes }}/{{ m.ano }}</span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="card">
+  <h3 style="font-size:0.9375rem;font-weight:600;margin-bottom:12px">Últimas Transações</h3>
+  {% if ultimas %}
+  <div class="transacao-cards">
+    {% for t in ultimas %}
+    <div class="transacao-card">
+      <div class="cat-dot" style="background:{{ t.categoria.cor }}"></div>
+      <div class="card-body">
+        <div class="desc">{{ t.descricao or t.categoria.nome }}</div>
+        <div class="meta">
+          <span>{{ t.data.strftime('%d/%m') }}</span>
+          <span class="tag {{ t.tipo }}">{{ 'Receita' if t.tipo == 'receita' else 'Despesa' }}</span>
+          <span>{{ t.categoria.nome }}</span>
+        </div>
+      </div>
+      <div class="card-valor {{ t.tipo }}">R$ {{ "%.2f"|format(t.valor) }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="table-wrap hide-mobile">
+    <table>
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Descrição</th>
+          <th>Categoria</th>
+          <th>Tipo</th>
+          <th style="text-align:right">Valor</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in ultimas %}
+        <tr>
+          <td>{{ t.data.strftime('%d/%m/%Y') }}</td>
+          <td>{{ t.descricao or '-' }}</td>
+          <td>{{ t.categoria.nome }}</td>
+          <td><span class="tag {{ t.tipo }}">{{ 'Receita' if t.tipo == 'receita' else 'Despesa' }}</span></td>
+          <td style="text-align:right;font-weight:600;color:var(--{{ 'green' if t.tipo == 'receita' else 'red' }})">R$ {{ "%.2f"|format(t.valor) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">📭</div>
+    <h3>Nenhuma transação ainda</h3>
+    <p>Clique em <strong>+ Nova</strong> para adicionar sua primeira transação.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

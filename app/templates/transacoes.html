@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% set active_nav = "transacoes" %}
+
+{% block title %}Transações - App Financeiro{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Transações <small>{{ mes }}/{{ ano }}</small></h1>
+  <a href="#" class="btn btn-primary hide-desktop" data-open-modal>+ Nova</a>
+</div>
+
+<div class="summary-grid">
+  <div class="summary-card receita">
+    <span class="label">Receitas</span>
+    <span class="value">R$ {{ "%.2f"|format(total_receitas) }}</span>
+  </div>
+  <div class="summary-card despesa">
+    <span class="label">Despesas</span>
+    <span class="value">R$ {{ "%.2f"|format(total_despesas) }}</span>
+  </div>
+  <div class="summary-card saldo {% if saldo < 0 %}negativo{% endif %}">
+    <span class="label">Saldo</span>
+    <span class="value">R$ {{ "%.2f"|format(saldo) }}</span>
+  </div>
+</div>
+
+<!-- FILTROS -->
+<div class="toolbar">
+  <select id="filtro_mes" onchange="var p=new URLSearchParams(location.search);p.set('mes',this.value);location.search=p">
+    {% for m in range(1, 13) %}
+    <option value="{{ m }}" {{ 'selected' if m == mes }}>{{ ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'][m-1] }}</option>
+    {% endfor %}
+  </select>
+  <input type="number" id="filtro_ano" value="{{ ano }}" min="2020" max="2099" style="width:80px" onchange="var p=new URLSearchParams(location.search);p.set('ano',this.value);location.search=p">
+  <select id="filtro_tipo">
+    <option value="">Todos</option>
+    <option value="receita" {{ 'selected' if tipo == 'receita' }}>Receitas</option>
+    <option value="despesa" {{ 'selected' if tipo == 'despesa' }}>Despesas</option>
+  </select>
+  <select id="filtro_categoria">
+    <option value="">Todas</option>
+    {% for cat in categorias %}
+    <option value="{{ cat.id }}" {{ 'selected' if categoria_id == cat.id }}>{{ cat.nome }}</option>
+    {% endfor %}
+  </select>
+  <button class="btn btn-secondary btn-sm" onclick="var p=new URLSearchParams(location.search);p.set('tipo',document.getElementById('filtro_tipo').value);p.set('categoria_id',document.getElementById('filtro_categoria').value);location.search=p">Filtrar</button>
+</div>
+
+<div class="card">
+  {% if transacoes %}
+  <!-- MOBILE CARDS -->
+  <div class="transacao-cards">
+    {% for t in transacoes %}
+    <div class="transacao-card">
+      <div class="cat-dot" style="background:{{ t.categoria.cor }}"></div>
+      <div class="card-body">
+        <div class="desc">{{ t.descricao or t.categoria.nome }}</div>
+        <div class="meta">
+          <span>{{ t.data.strftime('%d/%m') }}</span>
+          <span class="tag {{ t.tipo }}">{{ 'Receita' if t.tipo == 'receita' else 'Despesa' }}</span>
+          <span>{{ t.categoria.nome }}</span>
+          {% if t.total_parcelas %}
+          <span>{{ t.parcela_numero }}/{{ t.total_parcelas }}</span>
+          {% endif %}
+        </div>
+      </div>
+      <div class="card-valor {{ t.tipo }}">R$ {{ "%.2f"|format(t.valor) }}</div>
+      <div class="card-actions">
+        <form action="{{ url_for('transacoes.excluir', id=t.id) }}" method="POST" style="display:inline" data-confirm="Excluir esta transação?">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-ghost btn-icon" title="Excluir">🗑️</button>
+        </form>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- DESKTOP TABLE -->
+  <div class="table-wrap hide-mobile">
+    <table>
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Descrição</th>
+          <th>Categoria</th>
+          <th>Tipo</th>
+          <th>Parcela</th>
+          <th style="text-align:right">Valor</th>
+          <th style="text-align:center">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in transacoes %}
+        <tr>
+          <td>{{ t.data.strftime('%d/%m/%Y') }}</td>
+          <td>{{ t.descricao or '-' }}</td>
+          <td>{{ t.categoria.nome }}</td>
+          <td><span class="tag {{ t.tipo }}">{{ 'Receita' if t.tipo == 'receita' else 'Despesa' }}</span></td>
+          <td style="color:var(--text-muted);font-size:0.75rem">{{ t.parcela_numero ~ '/' ~ t.total_parcelas if t.total_parcelas else '-' }}</td>
+          <td style="text-align:right;font-weight:600;color:var(--{{ 'green' if t.tipo == 'receita' else 'red' }})">R$ {{ "%.2f"|format(t.valor) }}</td>
+          <td style="text-align:center">
+            <form action="{{ url_for('transacoes.excluir', id=t.id) }}" method="POST" style="display:inline" data-confirm="Excluir esta transação?">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-ghost btn-sm">Excluir</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">📭</div>
+    <h3>Nenhuma transação neste mês</h3>
+    <p>Clique em <strong>+ Nova</strong> para adicionar.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

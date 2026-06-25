@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% set active_nav = "" %}
+
+{% block title %}Cartões - App Financeiro{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Cartões de Crédito</h1>
+  <button class="btn btn-primary" onclick="document.getElementById('modalCartao').classList.add('show')">+ Novo</button>
+</div>
+
+<div class="card">
+  {% if cartoes %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Fechamento</th>
+          <th>Vencimento</th>
+          <th style="text-align:center">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in cartoes %}
+        <tr>
+          <td><strong>{{ c.nome }}</strong></td>
+          <td>Dia {{ c.dia_fechamento }}</td>
+          <td>Dia {{ c.dia_vencimento }}</td>
+          <td style="text-align:center">
+            <button class="btn btn-ghost btn-sm" onclick="editarCartao({{ c.id }}, '{{ c.nome }}', {{ c.dia_fechamento }}, {{ c.dia_vencimento }})">Editar</button>
+            <form action="{{ url_for('cartoes.excluir', id=c.id) }}" method="POST" style="display:inline" data-confirm="Excluir cartão '{{ c.nome }}'?">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-ghost btn-sm">Excluir</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">💳</div>
+    <h3>Nenhum cartão</h3>
+    <p>Cadastre seus cartões para usar parcelamentos.</p>
+  </div>
+  {% endif %}
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalCartao">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modalCartaoTitle">Novo Cartão</h2>
+      <button class="modal-close" onclick="document.getElementById('modalCartao').classList.remove('show')">&times;</button>
+    </div>
+    <form id="formCartao" action="{{ url_for('cartoes.criar') }}" method="POST" data-loading>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="cartao_id" id="cartao_id" value="">
+      <div class="form-group">
+        <label>Nome do Cartão</label>
+        <input type="text" name="nome" id="cartao_nome" required maxlength="100" placeholder="Ex: Nubank">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Dia Fechamento</label>
+          <input type="number" name="dia_fechamento" id="cartao_fechamento" min="1" max="31" required value="1">
+        </div>
+        <div class="form-group">
+          <label>Dia Vencimento</label>
+          <input type="number" name="dia_vencimento" id="cartao_vencimento" min="1" max="31" required value="15">
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('modalCartao').classList.remove('show')">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function editarCartao(id, nome, fechamento, vencimento) {
+  document.getElementById('cartao_id').value = id;
+  document.getElementById('cartao_nome').value = nome;
+  document.getElementById('cartao_fechamento').value = fechamento;
+  document.getElementById('cartao_vencimento').value = vencimento;
+  document.getElementById('modalCartaoTitle').textContent = 'Editar Cartão';
+  document.getElementById('formCartao').action = '/cartoes/editar/' + id;
+  document.getElementById('modalCartao').classList.add('show');
+}
+</script>
+{% endblock %}

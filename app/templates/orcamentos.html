@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% set active_nav = "orcamentos" %}
+
+{% block title %}Orçamentos - App Financeiro{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Orçamentos <small>{{ mes }}/{{ ano }}</small></h1>
+</div>
+
+<div class="toolbar">
+  <select onchange="var p=new URLSearchParams(location.search);p.set('mes',this.value);location.search=p">
+    {% for m in range(1, 13) %}
+    <option value="{{ m }}" {{ 'selected' if m == mes }}>{{ ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'][m-1] }}</option>
+    {% endfor %}
+  </select>
+  <input type="number" value="{{ ano }}" style="width:80px" onchange="var p=new URLSearchParams(location.search);p.set('ano',this.value);location.search=p">
+</div>
+
+<form action="{{ url_for('orcamentos.salvar') }}" method="POST" data-loading>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <input type="hidden" name="mes" value="{{ mes }}">
+  <input type="hidden" name="ano" value="{{ ano }}">
+
+  <div class="card">
+    {% if categorias %}
+    {% for cat in categorias %}
+    {% set limite = orcamentos.get(cat.id, 0) %}
+    {% set gasto = gastos.get(cat.id, 0) %}
+    {% set pct = (gasto / limite * 100)|round|int if limite > 0 else 0 %}
+    <div class="progress-item">
+      <div class="progress-header">
+        <span class="cat-name">{{ cat.nome }}</span>
+        <span>
+          R$ {{ "%.2f"|format(gasto) }}
+          {% if limite > 0 %}
+          / R$ {{ "%.2f"|format(limite) }}
+          {% endif %}
+        </span>
+      </div>
+      {% if limite > 0 %}
+      <div class="progress-track">
+        <div class="progress-fill {% if pct > 100 %}over{% elif pct > 80 %}warn{% else %}ok{% endif %}" style="width:{{ [pct, 100]|min }}%"></div>
+      </div>
+      {% endif %}
+      <div>
+        <input type="number" name="limite_{{ cat.id }}" step="0.01" min="0" placeholder="Sem limite" value="{{ limite if limite > 0 else '' }}" style="width:140px;font-size:0.8125rem">
+      </div>
+    </div>
+    {% endfor %}
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Salvar Orçamentos</button>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">🎯</div>
+      <h3>Nenhuma categoria de despesa</h3>
+      <p>Crie categorias para definir orçamentos.</p>
+    </div>
+    {% endif %}
+  </div>
+</form>
+{% endblock %}

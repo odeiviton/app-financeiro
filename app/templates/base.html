@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}App Financeiro{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+  {% set active_nav = active_nav or 'dashboard' %}
+
+  <!-- TOP NAV (desktop) -->
+  <nav class="top-nav">
+    <div class="container">
+      <a href="{{ url_for('dashboard.dashboard') }}" class="brand">
+        <span>$</span> Finanças
+      </a>
+      <ul class="nav-links">
+        <li><a href="{{ url_for('dashboard.dashboard') }}" class="{% if active_nav == 'dashboard' %}active{% endif %}">Dashboard</a></li>
+        <li><a href="{{ url_for('transacoes.listar') }}" class="{% if active_nav == 'transacoes' %}active{% endif %}">Transações</a></li>
+        <li><a href="{{ url_for('relatorios.relatorios') }}" class="{% if active_nav == 'relatorios' %}active{% endif %}">Relatórios</a></li>
+        <li><a href="{{ url_for('contas_fixas.listar') }}" class="{% if active_nav == 'contas_fixas' %}active{% endif %}">Contas Fixas</a></li>
+        <li><a href="{{ url_for('orcamentos.listar') }}" class="{% if active_nav == 'orcamentos' %}active{% endif %}">Orçamentos</a></li>
+        <li class="dropdown">
+          <a href="#">Mais ▾</a>
+          <div class="dropdown-menu">
+            <a href="{{ url_for('categorias.listar') }}">Categorias</a>
+            <a href="{{ url_for('cartoes.listar') }}">Cartões</a>
+            <a href="{{ url_for('parcelamentos.listar') }}">Parcelamentos</a>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- BOTTOM NAV (mobile) -->
+  <nav class="bottom-nav">
+    <a href="{{ url_for('dashboard.dashboard') }}" class="{% if active_nav == 'dashboard' %}active{% endif %}">
+      <span class="nav-icon">📊</span>
+      <span class="nav-label">Dashboard</span>
+    </a>
+    <a href="{{ url_for('transacoes.listar') }}" class="{% if active_nav == 'transacoes' %}active{% endif %}">
+      <span class="nav-icon">💳</span>
+      <span class="nav-label">Transações</span>
+    </a>
+    <div class="nav-add">
+      <a href="#" data-open-modal>
+        <span class="nav-icon">+</span>
+        <span class="nav-label hide-desktop" style="font-size:0.5rem;margin-top:-2px">Nova</span>
+      </a>
+    </div>
+    <a href="{{ url_for('relatorios.relatorios') }}" class="{% if active_nav == 'relatorios' %}active{% endif %}">
+      <span class="nav-icon">📈</span>
+      <span class="nav-label">Relatórios</span>
+    </a>
+    <a href="#" onclick="document.querySelector('.dropdown > a')?.click();return false;">
+      <span class="nav-icon">⚙️</span>
+      <span class="nav-label">Menu</span>
+    </a>
+  </nav>
+
+  <!-- FLASH MESSAGES -->
+  <div class="flash-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+      <div class="flash {{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+    {% endwith %}
+  </div>
+
+  <!-- MODAL NOVA TRANSACAO -->
+  <div class="modal-overlay" id="modalTransacao">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Nova Transação</h2>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form action="{{ url_for('transacoes.criar') }}" method="POST" data-loading>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="form-group">
+          <label for="form_tipo">Tipo</label>
+          <select name="tipo" id="form_tipo" required>
+            <option value="">Selecione...</option>
+            <option value="receita">Receita</option>
+            <option value="despesa">Despesa</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="form_categoria">Categoria</label>
+          <select name="categoria_id" id="form_categoria" required disabled>
+            <option value="">Selecione o tipo primeiro...</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="form_descricao">Descrição</label>
+          <input type="text" name="descricao" id="form_descricao" placeholder="Ex: Salário Janeiro" maxlength="200">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="form_valor">Valor (R$)</label>
+            <input type="number" name="valor" id="form_valor" step="0.01" min="0.01" required placeholder="0,00">
+          </div>
+          <div class="form-group">
+            <label for="form_data">Data</label>
+            <input type="date" name="data" id="form_data" value="{{ now.strftime('%Y-%m-%d') }}">
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary modal-close">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+
+  <script>
+    var categoriasData = {{ categorias_json|default('[]')|safe }};
+  </script>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
