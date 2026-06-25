@@ -5,8 +5,16 @@
 
 {% block content %}
 <div class="page-header">
-  <h1>Dashboard <small>{{ mes_atual }}/{{ ano_atual }}</small></h1>
-  <button id="installBtn" class="btn btn-primary" style="display:none">📲 Instalar App</button>
+  <h1>Dashboard</h1>
+  <div style="display:flex;gap:8px">
+    <select id="filtro_mes" onchange="irParaMes(this.value)">
+      {% for m in range(1, 13) %}
+      <option value="{{ m }}" {{ 'selected' if m == mes_atual }}>{{ ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'][m-1] }}</option>
+      {% endfor %}
+    </select>
+    <input type="number" id="filtro_ano" value="{{ ano_atual }}" min="2020" max="2099" style="width:80px" onchange="irParaMes(document.getElementById('filtro_mes').value)">
+    <button id="installBtn" class="btn btn-primary" style="display:none">📲</button>
+  </div>
 </div>
 
 <div class="summary-grid">
@@ -116,11 +124,16 @@
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script>
+  function irParaMes(mes) {
+    var ano = document.getElementById('filtro_ano').value;
+    location.href = '?mes=' + mes + '&ano=' + ano;
+  }
+
   document.getElementById('installBtn')?.addEventListener('click', async () => {
     if (deferredPrompt) { deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; }
   });
 
-  fetch('{{ url_for("dashboard.chart_data") }}')
+  fetch('{{ url_for("dashboard.chart_data", ano=ano_atual) }}')
     .then(r => r.json())
     .then(data => {
       var nomes = {{ nome_meses|tojson }};

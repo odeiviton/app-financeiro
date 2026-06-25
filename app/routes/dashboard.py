@@ -12,8 +12,8 @@ bp = Blueprint('dashboard', __name__, url_prefix='/')
 @login_required
 def dashboard():
     hoje = date.today()
-    mes_atual = hoje.month
-    ano_atual = hoje.year
+    mes_atual = request.args.get('mes', type=int, default=hoje.month)
+    ano_atual = request.args.get('ano', type=int, default=hoje.year)
 
     _auto_launch_fixas(mes_atual, ano_atual)
 
@@ -89,7 +89,7 @@ def dashboard():
 @bp.route('/api/chart-data')
 @login_required
 def chart_data():
-    ano = date.today().year
+    ano = request.args.get('ano', type=int, default=date.today().year)
     meses = []
     for m in range(1, 13):
         receita = db.session.query(db.func.sum(Transacao.valor)).filter(
