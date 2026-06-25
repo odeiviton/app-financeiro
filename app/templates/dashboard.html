@@ -6,6 +6,7 @@
 {% block content %}
 <div class="page-header">
   <h1>Dashboard <small>{{ mes_atual }}/{{ ano_atual }}</small></h1>
+  <button id="installBtn" class="btn btn-primary" style="display:none">📲 Instalar App</button>
 </div>
 
 <div class="summary-grid">
@@ -25,21 +26,18 @@
 </div>
 
 <div class="card" style="margin-bottom:20px">
-  <h3 style="font-size:0.9375rem;font-weight:600;margin-bottom:16px">Últimos 6 Meses</h3>
-  <div class="monthly-grid">
-    {% for m in meses %}
-    <div class="month-bar">
-      <div class="bar-stack">
-        {% set max_val = (m.receitas if m.receitas > m.despesas else m.despesas) or 1 %}
-        {% set rec_pct = (m.receitas / max_val * 80)|round|int %}
-        {% set desp_pct = (m.despesas / max_val * 80)|round|int %}
-        <div class="bar-receita" style="height:{{ rec_pct }}px"></div>
-        <div class="bar-despesa" style="height:{{ desp_pct }}px"></div>
-        <div style="flex:1"></div>
-      </div>
-      <span class="bar-label">{{ m.mes }}/{{ m.ano }}</span>
-    </div>
-    {% endfor %}
+  <div class="card-header">
+    <h2>Evolução Mensal</h2>
+  </div>
+  <canvas id="chartMensal" height="200"></canvas>
+</div>
+
+<div class="card" style="margin-bottom:20px">
+  <div class="card-header">
+    <h2>Despesas por Categoria</h2>
+  </div>
+  <div style="max-width:320px;margin:0 auto">
+    <canvas id="chartCategorias" height="320"></canvas>
   </div>
 </div>
 
@@ -94,4 +92,55 @@
   </div>
   {% endif %}
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script>
+  document.getElementById('installBtn')?.addEventListener('click', async () => {
+    if (deferredPrompt) { deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; }
+  });
+
+  fetch('{{ url_for("dashboard.chart_data") }}')
+    .then(r => r.json())
+    .then(data => {
+      var nomes = {{ nome_meses|tojson }};
+      new Chart(document.getElementById('chartMensal'), {
+        type: 'bar',
+        data: {
+          labels: nomes,
+          datasets: [
+            { label: 'Receitas', data: data.meses.map(m => m.receita), backgroundColor: '#10b981', borderRadius: 4 },
+            { label: 'Despesas', data: data.meses.map(m => m.despesa), backgroundColor: '#ef4444', borderRadius: 4 }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { labels: { color: '#94a3b8' } } },
+          scales: {
+            x: { ticks: { color: '#64748b' }, grid: { color: '#2d2d44' } },
+            y: { ticks: { color: '#64748b', callback: v => 'R$' + v }, grid: { color: '#2d2d44' } }
+          }
+        }
+      });
+
+      if (data.categorias.length) {
+        new Chart(document.getElementById('chartCategorias'), {
+          type: 'doughnut',
+          data: {
+            labels: data.categorias.map(c => c.nome),
+            datasets: [{ data: data.categorias.map(c => c.total), backgroundColor: data.categorias.map(c => c.cor) }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { position: 'bottom', labels: { color: '#94a3b8', padding: 12 } }
+            }
+          }
+        });
+      } else {
+        document.getElementById('chartCategorias').style.display = 'none';
+      }
+    });
+</script>
 {% endblock %}

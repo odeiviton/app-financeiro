@@ -7,6 +7,12 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <meta name="theme-color" content="#7c3aed">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <link rel="icon" href="{{ url_for('static', filename='icons/icon-192.svg') }}" sizes="192x192">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-192.svg') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
@@ -58,7 +64,7 @@
       <span class="nav-label">Transações</span>
     </a>
     <div class="nav-add">
-      <a href="#" data-open-modal>
+      <a href="{{ url_for('transacoes.nova') }}">
         <span class="nav-icon">+</span>
         <span class="nav-label hide-desktop" style="font-size:0.5rem;margin-top:-2px">Nova</span>
       </a>
@@ -93,6 +99,7 @@
       </div>
       <form action="{{ url_for('transacoes.criar') }}" method="POST" data-loading>
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="redirect" value="{{ url_for('transacoes.listar', mes=now.month, ano=now.year) }}">
 
         <div class="form-group">
           <label for="form_tipo">Tipo</label>
@@ -142,5 +149,18 @@
     var categoriasData = {{ categorias_json|default('[]')|safe }};
   </script>
   <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  {% block scripts %}{% endblock %}
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/static/sw.js');
+    }
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const btn = document.getElementById('installBtn');
+      if (btn) btn.style.display = 'flex';
+    });
+  </script>
 </body>
 </html>

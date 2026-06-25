@@ -1,5 +1,5 @@
 from datetime import date
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, Response
 from flask_login import login_required
 from app import db
 from app.models import Transacao, Categoria
@@ -45,6 +45,12 @@ def listar():
     )
 
 
+@bp.route('/nova')
+@login_required
+def nova():
+    return render_template('nova_transacao.html', active_nav='transacoes')
+
+
 @bp.route('/criar', methods=['POST'])
 @login_required
 def criar():
@@ -65,7 +71,29 @@ def criar():
     db.session.commit()
     flash('Transação adicionada com sucesso!', 'success')
 
-    return redirect(url_for('transacoes.listar', mes=data.month, ano=data.year))
+    redirect_to = request.form.get('redirect') or url_for('transacoes.listar', mes=data.month, ano=data.year)
+    return redirect(redirect_to)
+
+
+@bp.route('/csv')
+@login_required
+def csv():
+    mes = request.args.get('mes', type=int, default=date.today().month)
+    ano = request.args.get('ano', type=int, default=date.today().year)
+    transacoes = Transacao.query.filter(
+        db.extract('month', Transacao.data) == mes,
+        db.extract('year', Transacao.data) == ano,
+    ).order_by(Transacao.data.desc()).all()
+
+    linhas = ['Data,Descrição,Categoria,Tipo,Valor']
+    for t in transacoes:
+        linhas.append(f'{t.data.strftime("%d/%m/%Y")},"{t.descricao or ""}",{t.categoria.nome},{t.tipo},{t.valor:.2f}'.replace('.', ','))
+
+    return Response(
+        '\n'.join(linhas),
+        mimetype='text/csv',
+        headers={'Content-Disposition': f'attachment; filename=transacoes_{mes}_{ano}.csv'}
+    )
 
 
 @bp.route('/excluir/<int:id>', methods=['POST'])

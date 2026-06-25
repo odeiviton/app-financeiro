@@ -6,7 +6,11 @@
 {% block content %}
 <div class="page-header">
   <h1>Transações <small>{{ mes }}/{{ ano }}</small></h1>
-  <a href="#" class="btn btn-primary hide-mobile" data-open-modal>+ Nova</a>
+  <div style="display:flex;gap:8px">
+    <a href="{{ url_for('transacoes.csv', mes=mes, ano=ano) }}" class="btn btn-secondary hide-mobile" title="Exportar CSV">📥</a>
+    <a href="#" class="btn btn-primary hide-mobile" data-open-modal>+ Nova</a>
+    <a href="{{ url_for('transacoes.nova') }}" class="btn btn-primary hide-desktop">+ Nova</a>
+  </div>
 </div>
 
 <div class="summary-grid">
@@ -48,10 +52,15 @@
 
 <div class="card">
   {% if transacoes %}
+  <!-- BUSCA -->
+  <div style="margin-bottom:12px">
+    <input type="text" id="busca" placeholder="🔍 Buscar por descrição..." style="max-width:400px" oninput="filtrar()">
+  </div>
+
   <!-- MOBILE CARDS -->
-  <div class="transacao-cards">
+  <div class="transacao-cards" id="cards-container">
     {% for t in transacoes %}
-    <div class="transacao-card">
+    <div class="transacao-card" data-search="{{ (t.descricao or '')|lower }} {{ t.categoria.nome|lower }}">
       <div class="cat-dot" style="background:{{ t.categoria.cor }}"></div>
       <div class="card-body">
         <div class="desc">{{ t.descricao or t.categoria.nome }}</div>
@@ -77,7 +86,7 @@
 
   <!-- DESKTOP TABLE -->
   <div class="table-wrap hide-mobile">
-    <table>
+    <table id="tabela-transacoes">
       <thead>
         <tr>
           <th>Data</th>
@@ -91,7 +100,7 @@
       </thead>
       <tbody>
         {% for t in transacoes %}
-        <tr>
+        <tr data-search="{{ (t.descricao or '')|lower }} {{ t.categoria.nome|lower }}">
           <td>{{ t.data.strftime('%d/%m/%Y') }}</td>
           <td>{{ t.descricao or '-' }}</td>
           <td>{{ t.categoria.nome }}</td>
@@ -117,4 +126,17 @@
   </div>
   {% endif %}
 </div>
+
+<div style="text-align:right;margin-top:8px" class="hide-desktop">
+  <a href="{{ url_for('transacoes.csv', mes=mes, ano=ano) }}" class="btn btn-secondary btn-sm">📥 Exportar CSV</a>
+</div>
+
+<script>
+function filtrar() {
+  var q = document.getElementById('busca').value.toLowerCase();
+  document.querySelectorAll('[data-search]').forEach(function(el) {
+    el.style.display = !q || el.getAttribute('data-search').includes(q) ? '' : 'none';
+  });
+}
+</script>
 {% endblock %}

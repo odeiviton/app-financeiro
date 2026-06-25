@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% set active_nav = "transacoes" %}
+{% block title %}Nova Transação - App Financeiro{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Nova Transação</h1>
+  <a href="{{ url_for('transacoes.listar') }}" class="btn btn-ghost">Cancelar</a>
+</div>
+
+<div class="card">
+  <form action="{{ url_for('transacoes.criar') }}" method="POST" data-loading>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="redirect" value="{{ url_for('transacoes.nova') }}">
+
+    <div class="form-group">
+      <label for="form_tipo">Tipo</label>
+      <div class="tipo-selector">
+        <label class="tipo-option receita">
+          <input type="radio" name="tipo" value="receita" required>
+          <span>💰 Receita</span>
+        </label>
+        <label class="tipo-option despesa">
+          <input type="radio" name="tipo" value="despesa" required>
+          <span>💸 Despesa</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="form_descricao">Descrição</label>
+      <input type="text" name="descricao" id="form_descricao" placeholder="Ex: Salário Janeiro" maxlength="200" required>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="form_valor">Valor (R$)</label>
+        <input type="number" name="valor" id="form_valor" step="0.01" min="0.01" required placeholder="0,00">
+      </div>
+      <div class="form-group">
+        <label for="form_data">Data</label>
+        <input type="date" name="data" id="form_data" value="{{ now.strftime('%Y-%m-%d') }}">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="form_categoria">Categoria</label>
+      <select name="categoria_id" id="form_categoria" required disabled>
+        <option value="">Selecione o tipo primeiro...</option>
+      </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-full">Salvar Transação</button>
+  </form>
+</div>
+
+<style>
+  .tipo-selector {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .tipo-option {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px;
+    border-radius: var(--radius-sm);
+    border: 2px solid var(--border);
+    cursor: pointer;
+    transition: all .15s;
+    font-weight: 500;
+    font-size: 0.9375rem;
+  }
+  .tipo-option:has(input:checked) {
+    border-color: var(--primary);
+    background: var(--primary-light);
+  }
+  .tipo-option input { display: none; }
+  .btn-full { width: 100%; margin-top: 8px; padding: 14px; font-size: 1rem; }
+</style>
+{% endblock %}

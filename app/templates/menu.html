@@ -36,8 +36,19 @@
       <span class="menu-icon">🚪</span>
       <span>Sair ({{ current_user.nome }})</span>
     </a>
+    <button id="installBtn" class="menu-item" style="display:none;border:none;cursor:pointer;width:100%;font-family:inherit;font-size:inherit">
+      <span class="menu-icon">📲</span>
+      <span>Instalar App</span>
+    </button>
   </div>
 </div>
+
+<script>
+  if (deferredPrompt) document.getElementById('installBtn').style.display = 'flex';
+  document.getElementById('installBtn')?.addEventListener('click', async () => {
+    if (deferredPrompt) { deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; }
+  });
+</script>
 
 <style>
   .menu-grid {
