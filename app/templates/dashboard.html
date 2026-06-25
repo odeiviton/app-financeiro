@@ -23,21 +23,40 @@
     <span class="value">R$ {{ "%.2f"|format(saldo) }}</span>
     <span class="sub">{{ 'Negativo' if saldo < 0 else 'Positivo' }}</span>
   </div>
+  {% if investimentos > 0 %}
+  <div class="summary-card" style="background:var(--primary-light);border:1px solid #7c3aed33">
+    <span class="label" style="color:var(--primary)">Investido</span>
+    <span class="value" style="color:var(--primary)">R$ {{ "%.2f"|format(investimentos) }}</span>
+  </div>
+  {% endif %}
 </div>
 
-<div class="card" style="margin-bottom:20px">
-  <div class="card-header">
-    <h2>Evolução Mensal</h2>
+<div style="display:grid;grid-template-columns:1fr;gap:20px;margin-bottom:20px">
+  {% if ranking %}
+  <div class="card">
+    <div class="card-header"><h2>🔝 Onde você mais gastou</h2></div>
+    <div class="ranking-lista">
+      {% for nome, cor, total in ranking %}
+      <div class="ranking-item">
+        <div class="ranking-cor" style="background:{{ cor }}"></div>
+        <span class="ranking-nome">{{ nome }}</span>
+        <span class="ranking-valor">R$ {{ "%.2f"|format(total) }}</span>
+      </div>
+      {% endfor %}
+    </div>
   </div>
-  <canvas id="chartMensal" height="200"></canvas>
-</div>
+  {% endif %}
 
-<div class="card" style="margin-bottom:20px">
-  <div class="card-header">
-    <h2>Despesas por Categoria</h2>
+  <div class="card">
+    <div class="card-header"><h2>Evolução Mensal</h2></div>
+    <canvas id="chartMensal" height="200"></canvas>
   </div>
-  <div style="max-width:320px;margin:0 auto">
-    <canvas id="chartCategorias" height="320"></canvas>
+
+  <div class="card">
+    <div class="card-header"><h2>Despesas por Categoria</h2></div>
+    <div style="max-width:320px;margin:0 auto">
+      <canvas id="chartCategorias" height="320"></canvas>
+    </div>
   </div>
 </div>
 
@@ -52,11 +71,11 @@
         <div class="desc">{{ t.descricao or t.categoria.nome }}</div>
         <div class="meta">
           <span>{{ t.data.strftime('%d/%m') }}</span>
-          <span class="tag {{ t.tipo }}">{{ 'Receita' if t.tipo == 'receita' else 'Despesa' }}</span>
+          <span class="tag {{ t.tipo }}">{{ {'receita':'Receita','despesa':'Despesa','investimento':'Invest.'}[t.tipo] }}</span>
           <span>{{ t.categoria.nome }}</span>
         </div>
       </div>
-      <div class="card-valor {{ t.tipo }}">R$ {{ "%.2f"|format(t.valor) }}</div>
+      <div class="card-valor {{ 'receita' if t.tipo == 'receita' else ('investimento' if t.tipo == 'investimento' else 'despesa') }}" style="{% if t.tipo == 'investimento' %}color:var(--primary){% endif %}">R$ {{ "%.2f"|format(t.valor) }}</div>
     </div>
     {% endfor %}
   </div>
@@ -77,8 +96,8 @@
           <td>{{ t.data.strftime('%d/%m/%Y') }}</td>
           <td>{{ t.descricao or '-' }}</td>
           <td>{{ t.categoria.nome }}</td>
-          <td><span class="tag {{ t.tipo }}">{{ 'Receita' if t.tipo == 'receita' else 'Despesa' }}</span></td>
-          <td style="text-align:right;font-weight:600;color:var(--{{ 'green' if t.tipo == 'receita' else 'red' }})">R$ {{ "%.2f"|format(t.valor) }}</td>
+          <td><span class="tag {{ t.tipo }}">{{ {'receita':'Receita','despesa':'Despesa','investimento':'Invest.'}[t.tipo] }}</span></td>
+          <td style="text-align:right;font-weight:600;color:var(--{{ 'green' if t.tipo == 'receita' else ('primary' if t.tipo == 'investimento' else 'red') }})">R$ {{ "%.2f"|format(t.valor) }}</td>
         </tr>
         {% endfor %}
       </tbody>
@@ -111,7 +130,8 @@
           labels: nomes,
           datasets: [
             { label: 'Receitas', data: data.meses.map(m => m.receita), backgroundColor: '#10b981', borderRadius: 4 },
-            { label: 'Despesas', data: data.meses.map(m => m.despesa), backgroundColor: '#ef4444', borderRadius: 4 }
+            { label: 'Despesas', data: data.meses.map(m => m.despesa), backgroundColor: '#ef4444', borderRadius: 4 },
+            { label: 'Investimentos', data: data.meses.map(m => m.investimento), backgroundColor: '#8b5cf6', borderRadius: 4 }
           ]
         },
         options: {

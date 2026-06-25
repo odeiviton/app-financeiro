@@ -162,3 +162,26 @@ class Parcelamento(db.Model):
             )
             db.session.add(transacao)
         db.session.commit()
+
+
+class MetaFinanceira(db.Model):
+    __tablename__ = 'metas'
+
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(200), nullable=False)
+    valor_alvo = db.Column(db.Float, nullable=False)
+    valor_atual = db.Column(db.Float, default=0)
+    cor = db.Column(db.String(7), default='#7c3aed')
+    created_at = db.Column(
+        db.DateTime, nullable=False,
+        default=lambda: datetime.now(timezone.utc)
+    )
+
+    def __repr__(self):
+        return f'<Meta {self.nome}>'
+
+    @property
+    def progresso(self):
+        if self.valor_alvo <= 0:
+            return 0
+        return min(round(self.valor_atual / self.valor_alvo * 100, 1), 100)

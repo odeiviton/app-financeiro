@@ -31,6 +31,7 @@
         <li><a href="{{ url_for('relatorios.relatorios') }}" class="{% if active_nav == 'relatorios' %}active{% endif %}">Relatórios</a></li>
         <li><a href="{{ url_for('contas_fixas.listar') }}" class="{% if active_nav == 'contas_fixas' %}active{% endif %}">Contas Fixas</a></li>
         <li><a href="{{ url_for('orcamentos.listar') }}" class="{% if active_nav == 'orcamentos' %}active{% endif %}">Orçamentos</a></li>
+        <li><a href="{{ url_for('metas.listar') }}" class="{% if active_nav == 'metas' %}active{% endif %}">Metas</a></li>
         <li class="dropdown">
           <a href="#">Mais ▾</a>
           <div class="dropdown-menu">
@@ -107,6 +108,7 @@
             <option value="">Selecione...</option>
             <option value="receita">Receita</option>
             <option value="despesa">Despesa</option>
+            <option value="investimento">Investimento</option>
           </select>
         </div>
 

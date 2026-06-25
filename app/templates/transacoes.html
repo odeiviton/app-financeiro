@@ -26,6 +26,12 @@
     <span class="label">Saldo</span>
     <span class="value">R$ {{ "%.2f"|format(saldo) }}</span>
   </div>
+  {% if total_investimentos > 0 %}
+  <div class="summary-card" style="background:var(--primary-light);border:1px solid #7c3aed33">
+    <span class="label" style="color:var(--primary)">Investido</span>
+    <span class="value" style="color:var(--primary)">R$ {{ "%.2f"|format(total_investimentos) }}</span>
+  </div>
+  {% endif %}
 </div>
 
 <!-- FILTROS -->
@@ -40,6 +46,7 @@
     <option value="">Todos</option>
     <option value="receita" {{ 'selected' if tipo == 'receita' }}>Receitas</option>
     <option value="despesa" {{ 'selected' if tipo == 'despesa' }}>Despesas</option>
+    <option value="investimento" {{ 'selected' if tipo == 'investimento' }}>Investimentos</option>
   </select>
   <select id="filtro_categoria">
     <option value="">Todas</option>
@@ -57,24 +64,37 @@
     <input type="text" id="busca" placeholder="🔍 Buscar por descrição..." style="max-width:400px" oninput="filtrar()">
   </div>
 
+  <!-- EXTRATO: Mobile -->
+  <div class="hide-desktop" style="margin-bottom:12px">
+    <label style="display:flex;align-items:center;gap:8px;font-size:0.8125rem;color:var(--text-secondary);cursor:pointer">
+      <input type="checkbox" id="toggleExtratoMobile" onchange="mostrarExtrato()"> Mostrar saldo acumulado
+    </label>
+  </div>
+
   <!-- MOBILE CARDS -->
   <div class="transacao-cards" id="cards-container">
-    {% for t in transacoes %}
+    {% set ns = namespace(saldo_acum=0) %}
+    {% for t in transacoes|reverse %}
+    {% set ns.saldo_acum = ns.saldo_acum + (t.valor if t.tipo == 'receita' else -t.valor) %}
     <div class="transacao-card" data-search="{{ (t.descricao or '')|lower }} {{ t.categoria.nome|lower }}">
       <div class="cat-dot" style="background:{{ t.categoria.cor }}"></div>
       <div class="card-body">
         <div class="desc">{{ t.descricao or t.categoria.nome }}</div>
         <div class="meta">
           <span>{{ t.data.strftime('%d/%m') }}</span>
-          <span class="tag {{ t.tipo }}">{{ 'Receita' if t.tipo == 'receita' else 'Despesa' }}</span>
+          <span class="tag {{ t.tipo }}">{{ {'receita':'Receita','despesa':'Despesa','investimento':'Invest.'}[t.tipo] }}</span>
           <span>{{ t.categoria.nome }}</span>
           {% if t.total_parcelas %}
           <span>{{ t.parcela_numero }}/{{ t.total_parcelas }}</span>
           {% endif %}
         </div>
+        <div class="extrato-saldo hide" style="font-size:0.75rem;color:var(--text-muted);margin-top:2px">
+          Saldo: R$ {{ "%.2f"|format(ns.saldo_acum) }}
+        </div>
       </div>
-      <div class="card-valor {{ t.tipo }}">R$ {{ "%.2f"|format(t.valor) }}</div>
+      <div class="card-valor {{ 'receita' if t.tipo == 'receita' else ('investimento' if t.tipo == 'investimento' else 'despesa') }}" style="{% if t.tipo == 'investimento' %}color:var(--primary){% endif %}">R$ {{ "%.2f"|format(t.valor) }}</div>
       <div class="card-actions">
+        <a href="{{ url_for('transacoes.editar', id=t.id) }}" class="btn btn-ghost btn-icon" title="Editar">✏️</a>
         <form action="{{ url_for('transacoes.excluir', id=t.id) }}" method="POST" style="display:inline" data-confirm="Excluir esta transação?">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <button type="submit" class="btn btn-ghost btn-icon" title="Excluir">🗑️</button>
@@ -86,6 +106,9 @@
 
   <!-- DESKTOP TABLE -->
   <div class="table-wrap hide-mobile">
+    <label style="display:flex;align-items:center;gap:8px;font-size:0.8125rem;color:var(--text-secondary);cursor:pointer;margin-bottom:8px">
+      <input type="checkbox" id="toggleExtrato" onchange="mostrarExtrato()"> Mostrar saldo acumulado
+    </label>
     <table id="tabela-transacoes">
       <thead>
         <tr>
@@ -95,19 +118,24 @@
           <th>Tipo</th>
           <th>Parcela</th>
           <th style="text-align:right">Valor</th>
+          <th style="text-align:right" class="extrato-col hide">Saldo</th>
           <th style="text-align:center">Ações</th>
         </tr>
       </thead>
       <tbody>
-        {% for t in transacoes %}
+        {% set ns2 = namespace(saldo_acum=0) %}
+        {% for t in transacoes|reverse %}
+        {% set ns2.saldo_acum = ns2.saldo_acum + (t.valor if t.tipo == 'receita' else -t.valor) %}
         <tr data-search="{{ (t.descricao or '')|lower }} {{ t.categoria.nome|lower }}">
           <td>{{ t.data.strftime('%d/%m/%Y') }}</td>
           <td>{{ t.descricao or '-' }}</td>
           <td>{{ t.categoria.nome }}</td>
-          <td><span class="tag {{ t.tipo }}">{{ 'Receita' if t.tipo == 'receita' else 'Despesa' }}</span></td>
+          <td><span class="tag {{ t.tipo }}">{{ {'receita':'Receita','despesa':'Despesa','investimento':'Invest.'}[t.tipo] }}</span></td>
           <td style="color:var(--text-muted);font-size:0.75rem">{{ t.parcela_numero ~ '/' ~ t.total_parcelas if t.total_parcelas else '-' }}</td>
-          <td style="text-align:right;font-weight:600;color:var(--{{ 'green' if t.tipo == 'receita' else 'red' }})">R$ {{ "%.2f"|format(t.valor) }}</td>
+          <td style="text-align:right;font-weight:600;color:var(--{{ 'green' if t.tipo == 'receita' else ('primary' if t.tipo == 'investimento' else 'red') }})">R$ {{ "%.2f"|format(t.valor) }}</td>
+          <td style="text-align:right;font-weight:500;color:var(--text-secondary)" class="extrato-col hide">R$ {{ "%.2f"|format(ns2.saldo_acum) }}</td>
           <td style="text-align:center">
+            <a href="{{ url_for('transacoes.editar', id=t.id) }}" class="btn btn-ghost btn-sm">Editar</a>
             <form action="{{ url_for('transacoes.excluir', id=t.id) }}" method="POST" style="display:inline" data-confirm="Excluir esta transação?">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button type="submit" class="btn btn-ghost btn-sm">Excluir</button>
@@ -138,5 +166,17 @@ function filtrar() {
     el.style.display = !q || el.getAttribute('data-search').includes(q) ? '' : 'none';
   });
 }
+function mostrarExtrato() {
+  var checked = document.getElementById('toggleExtrato')?.checked || document.getElementById('toggleExtratoMobile')?.checked;
+  document.querySelectorAll('.extrato-col, .extrato-saldo').forEach(function(el) {
+    el.classList.toggle('hide', !checked);
+  });
+}
 </script>
+
+<style>
+  .tag.investimento { background: var(--primary-light); color: var(--primary); }
+  .summary-card .tag.investimento { background: var(--primary-light); }
+  .hide { display: none !important; }
+</style>
 {% endblock %}

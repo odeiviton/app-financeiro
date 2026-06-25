@@ -45,6 +45,8 @@ def create_app(config_name='default'):
     app.register_blueprint(relatorios_bp)
     app.register_blueprint(cartoes_bp)
     app.register_blueprint(parcelamentos_bp)
+    from app.routes.metas import bp as metas_bp
+    app.register_blueprint(metas_bp)
 
     @app.context_processor
     def inject_now():
@@ -96,8 +98,14 @@ def _seed_categories():
         ('Cartão de Crédito', '#78716c'),
         ('Outras Despesas', '#64748b'),
     ]
+    investimentos = [
+        ('Investimentos', '#8b5cf6'),
+        ('Poupança', '#06b6d4'),
+    ]
     for nome, cor in receitas:
         db.session.add(Categoria(nome=nome, tipo='receita', cor=cor))
     for nome, cor in despesas:
         db.session.add(Categoria(nome=nome, tipo='despesa', cor=cor))
+    for nome, cor in investimentos:
+        db.session.add(Categoria(nome=nome, tipo='investimento', cor=cor))
     db.session.commit()

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% set active_nav = "transacoes" %}
+{% block title %}Editar Transação - App Financeiro{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Editar Transação</h1>
+  <a href="{{ url_for('transacoes.listar', mes=t.data.month, ano=t.data.year) }}" class="btn btn-ghost">Cancelar</a>
+</div>
+
+<div class="card" style="max-width:480px">
+  <form action="{{ url_for('transacoes.editar', id=t.id) }}" method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <div class="form-group">
+      <label>Descrição</label>
+      <input type="text" name="descricao" value="{{ t.descricao or '' }}" maxlength="200">
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Valor (R$)</label>
+        <input type="number" name="valor" step="0.01" min="0.01" value="{{ t.valor }}" required>
+      </div>
+      <div class="form-group">
+        <label>Data</label>
+        <input type="date" name="data" value="{{ t.data.strftime('%Y-%m-%d') }}">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Categoria</label>
+      <select name="categoria_id" required>
+        {% for cat in categorias %}
+        <option value="{{ cat.id }}" {{ 'selected' if cat.id == t.categoria_id }}>{{ cat.nome }} ({{ cat.tipo }})</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-actions">
+      <a href="{{ url_for('transacoes.listar', mes=t.data.month, ano=t.data.year) }}" class="btn btn-secondary">Cancelar</a>
+      <button type="submit" class="btn btn-primary">Salvar</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -28,6 +28,7 @@ def listar():
 
     receitas = sum(t.valor for t in transacoes if t.tipo == 'receita')
     despesas = sum(t.valor for t in transacoes if t.tipo == 'despesa')
+    investimentos = sum(t.valor for t in transacoes if t.tipo == 'investimento')
 
     categorias = Categoria.query.order_by(Categoria.tipo, Categoria.nome).all()
 
@@ -41,7 +42,8 @@ def listar():
         categoria_id=categoria_id,
         total_receitas=round(receitas, 2),
         total_despesas=round(despesas, 2),
-        saldo=round(receitas - despesas, 2),
+        total_investimentos=round(investimentos, 2),
+        saldo=round(receitas - despesas - investimentos, 2),
     )
 
 
@@ -94,6 +96,22 @@ def csv():
         mimetype='text/csv',
         headers={'Content-Disposition': f'attachment; filename=transacoes_{mes}_{ano}.csv'}
     )
+
+
+@bp.route('/editar/<int:id>', methods=['GET', 'POST'])
+@login_required
+def editar(id):
+    transacao = Transacao.query.get_or_404(id)
+    if request.method == 'POST':
+        transacao.descricao = request.form.get('descricao', '')
+        transacao.valor = float(request.form.get('valor', 0))
+        transacao.data = date.fromisoformat(request.form.get('data', str(date.today())))
+        transacao.categoria_id = int(request.form.get('categoria_id'))
+        db.session.commit()
+        flash('Transação atualizada!', 'success')
+        return redirect(url_for('transacoes.listar', mes=transacao.data.month, ano=transacao.data.year))
+    categorias = Categoria.query.order_by(Categoria.tipo, Categoria.nome).all()
+    return render_template('editar_transacao.html', t=transacao, categorias=categorias)
 
 
 @bp.route('/excluir/<int:id>', methods=['POST'])
