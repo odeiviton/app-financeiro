@@ -16,6 +16,14 @@ class Config:
             'instance', 'financas.db'
         )
     )
+
+    @staticmethod
+    def ensure_instance():
+        path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            'instance'
+        )
+        os.makedirs(path, exist_ok=True)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     WTF_CSRF_ENABLED = True
 
