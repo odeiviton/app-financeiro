@@ -27,6 +27,31 @@
   --bottom-nav-height: 64px;
 }
 
+[data-theme="light"] {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f1f5f9;
+  --bg-nav: #fffffff2;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --border: #e2e8f0;
+  --border-light: #cbd5e1;
+  --primary: #7c3aed;
+  --primary-hover: #6d28d9;
+  --primary-light: #7c3aed12;
+  --green: #059669;
+  --green-bg: #05966912;
+  --red: #dc2626;
+  --red-bg: #dc262612;
+  --yellow: #d97706;
+  --yellow-bg: #d9770612;
+  --blue: #2563eb;
+  --blue-bg: #2563eb12;
+  --shadow: 0 4px 24px rgba(0,0,0,.08);
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -762,6 +787,17 @@ select option { background: var(--bg-secondary); color: var(--text-primary); }
   font-size: 0.75rem;
   font-weight: 400;
   color: var(--text-muted);
+}
+
+/* === SKELETON === */
+.skeleton-chart {
+  background: linear-gradient(90deg, var(--bg-card-hover) 25%, var(--bg-card) 50%, var(--bg-card-hover) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+}
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 /* === SCROLLBAR === */

@@ -95,6 +95,10 @@
       <div class="card-valor {{ 'receita' if t.tipo == 'receita' else ('investimento' if t.tipo == 'investimento' else 'despesa') }}" style="{% if t.tipo == 'investimento' %}color:var(--primary){% endif %}">R$ {{ "%.2f"|format(t.valor) }}</div>
       <div class="card-actions">
         <a href="{{ url_for('transacoes.editar', id=t.id) }}" class="btn btn-ghost btn-icon" title="Editar">✏️</a>
+        <form action="{{ url_for('transacoes.duplicar', id=t.id) }}" method="POST" style="display:inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-ghost btn-icon" title="Duplicar">📋</button>
+        </form>
         <form action="{{ url_for('transacoes.excluir', id=t.id) }}" method="POST" style="display:inline" data-confirm="Excluir esta transação?">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <button type="submit" class="btn btn-ghost btn-icon" title="Excluir">🗑️</button>
@@ -136,6 +140,10 @@
           <td style="text-align:right;font-weight:500;color:var(--text-secondary)" class="extrato-col hide">R$ {{ "%.2f"|format(ns2.saldo_acum) }}</td>
           <td style="text-align:center">
             <a href="{{ url_for('transacoes.editar', id=t.id) }}" class="btn btn-ghost btn-sm">Editar</a>
+            <form action="{{ url_for('transacoes.duplicar', id=t.id) }}" method="POST" style="display:inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-ghost btn-sm">Duplicar</button>
+            </form>
             <form action="{{ url_for('transacoes.excluir', id=t.id) }}" method="POST" style="display:inline" data-confirm="Excluir esta transação?">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button type="submit" class="btn btn-ghost btn-sm">Excluir</button>

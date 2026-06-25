@@ -37,6 +37,14 @@ def dashboard():
 
     saldo = round(receitas - despesas, 2)
 
+    saldo_geral_receitas = db.session.query(db.func.sum(Transacao.valor)).filter(
+        Transacao.tipo == 'receita',
+    ).scalar() or 0
+    saldo_geral_despesas = db.session.query(db.func.sum(Transacao.valor)).filter(
+        Transacao.tipo == 'despesa',
+    ).scalar() or 0
+    saldo_geral = round(saldo_geral_receitas - saldo_geral_despesas, 2)
+
     ranking = db.session.query(
         Categoria.nome, Categoria.cor, db.func.sum(Transacao.valor).label('total')
     ).join(Transacao, Categoria.id == Transacao.categoria_id).filter(
@@ -77,6 +85,7 @@ def dashboard():
         receitas=round(receitas, 2),
         despesas=round(despesas, 2),
         investimentos=round(investimentos, 2),
+        saldo_geral=saldo_geral,
         ranking=ranking,
         ultimas=ultimas,
         meses=meses,

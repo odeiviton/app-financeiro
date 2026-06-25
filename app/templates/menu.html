@@ -40,6 +40,10 @@
       <span class="menu-icon">🚪</span>
       <span>Sair ({{ current_user.nome }})</span>
     </a>
+    <button id="toggleThemeMobile" class="menu-item" style="border:none;cursor:pointer;width:100%;font-family:inherit;font-size:inherit">
+      <span class="menu-icon">☀️</span>
+      <span id="toggleThemeText">Modo Claro</span>
+    </button>
     <button id="installBtn" class="menu-item" style="display:none;border:none;cursor:pointer;width:100%;font-family:inherit;font-size:inherit">
       <span class="menu-icon">📲</span>
       <span>Instalar App</span>
@@ -52,6 +56,20 @@
   document.getElementById('installBtn')?.addEventListener('click', async () => {
     if (deferredPrompt) { deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; }
   });
+  (function() {
+    var btn = document.getElementById('toggleThemeMobile');
+    var text = document.getElementById('toggleThemeText');
+    function update() {
+      var isLight = document.documentElement.getAttribute('data-theme') === 'light';
+      text.textContent = isLight ? 'Modo Escuro' : 'Modo Claro';
+      btn.querySelector('.menu-icon').textContent = isLight ? '🌙' : '☀️';
+    }
+    update();
+    btn.addEventListener('click', function() {
+      document.getElementById('toggleTheme').click();
+      setTimeout(update, 50);
+    });
+  })();
 </script>
 
 <style>

@@ -98,6 +98,23 @@ def csv():
     )
 
 
+@bp.route('/duplicar/<int:id>', methods=['POST'])
+@login_required
+def duplicar(id):
+    original = Transacao.query.get_or_404(id)
+    nova = Transacao(
+        descricao=original.descricao,
+        valor=original.valor,
+        tipo=original.tipo,
+        data=original.data,
+        categoria_id=original.categoria_id,
+    )
+    db.session.add(nova)
+    db.session.commit()
+    flash('Transação duplicada!', 'success')
+    return redirect(url_for('transacoes.listar', mes=original.data.month, ano=original.data.year))
+
+
 @bp.route('/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
 def editar(id):
