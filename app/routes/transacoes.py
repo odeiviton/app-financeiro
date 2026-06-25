@@ -43,7 +43,7 @@ def listar():
         total_receitas=round(receitas, 2),
         total_despesas=round(despesas, 2),
         total_investimentos=round(investimentos, 2),
-        saldo=round(receitas - despesas - investimentos, 2),
+        saldo=round(receitas - despesas, 2),
     )
 
 

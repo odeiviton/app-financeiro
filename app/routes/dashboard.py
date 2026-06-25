@@ -35,7 +35,7 @@ def dashboard():
         db.extract('year', Transacao.data) == ano_atual,
     ).scalar() or 0
 
-    saldo = round(receitas - despesas - investimentos, 2)
+    saldo = round(receitas - despesas, 2)
 
     ranking = db.session.query(
         Categoria.nome, Categoria.cor, db.func.sum(Transacao.valor).label('total')
