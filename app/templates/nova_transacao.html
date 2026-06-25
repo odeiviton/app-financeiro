@@ -14,21 +14,26 @@
     <input type="hidden" name="redirect" value="{{ url_for('transacoes.nova') }}">
 
     <div class="form-group">
-      <label for="form_tipo">Tipo</label>
+      <label>Tipo</label>
       <div class="tipo-selector">
         <label class="tipo-option receita">
-          <input type="radio" name="tipo" value="receita" required>
+          <input type="radio" name="tipo" value="receita" required onchange="atualizarTipo(this.value)">
           <span>💰 Receita</span>
         </label>
         <label class="tipo-option despesa">
-          <input type="radio" name="tipo" value="despesa" required>
+          <input type="radio" name="tipo" value="despesa" required onchange="atualizarTipo(this.value)">
           <span>💸 Despesa</span>
         </label>
         <label class="tipo-option" style="border-color:var(--primary)">
-          <input type="radio" name="tipo" value="investimento" required>
+          <input type="radio" name="tipo" value="investimento" required onchange="atualizarTipo(this.value)">
           <span>📈 Investimento</span>
         </label>
       </div>
+      <select id="form_tipo" style="display:none">
+        <option value="receita">Receita</option>
+        <option value="despesa">Despesa</option>
+        <option value="investimento">Investimento</option>
+      </select>
     </div>
 
     <div class="form-group">
@@ -82,6 +87,15 @@
     background: var(--primary-light);
   }
   .tipo-option input { display: none; }
+  .tipo-option:has(input:checked) { border-color: var(--primary); background: var(--primary-light); }
   .btn-full { width: 100%; margin-top: 8px; padding: 14px; font-size: 1rem; }
 </style>
+
+<script>
+function atualizarTipo(valor) {
+  var sel = document.getElementById('form_tipo');
+  sel.value = valor;
+  sel.dispatchEvent(new Event('change'));
+}
+</script>
 {% endblock %}
