@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}Perfil - App Financeiro{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Meu Perfil</h1>
+</div>
+
+<div class="card">
+  <div class="card-body" style="max-width:480px">
+    <form action="{{ url_for('auth.perfil') }}" method="POST">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" value="{{ current_user.email }}" disabled>
+        <span style="font-size:0.75rem;color:var(--text-muted)">Email não pode ser alterado.</span>
+      </div>
+
+      <div class="form-group">
+        <label for="nome">Nome</label>
+        <input type="text" name="nome" id="nome" value="{{ current_user.nome }}" required maxlength="80">
+      </div>
+
+      <hr style="border-color:var(--border);margin:20px 0">
+
+      <h3 style="font-size:1rem;font-weight:600;margin-bottom:16px">Alterar Senha</h3>
+
+      <div class="form-group">
+        <label for="senha_atual">Senha Atual</label>
+        <input type="password" name="senha_atual" id="senha_atual" placeholder="Deixe em branco para não alterar">
+      </div>
+
+      <div class="form-group">
+        <label for="nova_senha">Nova Senha</label>
+        <input type="password" name="nova_senha" id="nova_senha" placeholder="Nova senha">
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

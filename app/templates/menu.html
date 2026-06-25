@@ -28,6 +28,10 @@
       <span class="menu-icon">🎯</span>
       <span>Orçamentos</span>
     </a>
+    <a href="{{ url_for('auth.perfil') }}" class="menu-item">
+      <span class="menu-icon">👤</span>
+      <span>Perfil</span>
+    </a>
     <a href="{{ url_for('auth.logout') }}" class="menu-item menu-logout">
       <span class="menu-icon">🚪</span>
       <span>Sair ({{ current_user.nome }})</span>
