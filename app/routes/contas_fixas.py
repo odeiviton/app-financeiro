@@ -1,5 +1,6 @@
 from datetime import date
-from flask import Blueprint, render_template, request, redirect, url_for
+from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask_login import login_required
 from app import db
 from app.models import ContaFixa, Categoria, Transacao
 
@@ -7,6 +8,7 @@ bp = Blueprint('contas_fixas', __name__, url_prefix='/contas-fixas')
 
 
 @bp.route('/')
+@login_required
 def listar():
     contas = ContaFixa.query.order_by(ContaFixa.dia_vencimento).all()
     categorias = Categoria.query.filter_by(tipo='despesa').order_by(Categoria.nome).all()
@@ -20,6 +22,7 @@ def listar():
 
 
 @bp.route('/criar', methods=['POST'])
+@login_required
 def criar():
     descricao = request.form.get('descricao')
     valor = float(request.form.get('valor', 0))
@@ -33,10 +36,12 @@ def criar():
     )
     db.session.add(conta)
     db.session.commit()
+    flash('Conta fixa criada com sucesso!', 'success')
     return redirect(url_for('contas_fixas.listar'))
 
 
 @bp.route('/editar/<int:id>', methods=['POST'])
+@login_required
 def editar(id):
     conta = ContaFixa.query.get_or_404(id)
     conta.descricao = request.form.get('descricao')
@@ -44,18 +49,22 @@ def editar(id):
     conta.dia_vencimento = int(request.form.get('dia_vencimento', 1))
     conta.categoria_id = int(request.form.get('categoria_id'))
     db.session.commit()
+    flash('Conta fixa atualizada!', 'success')
     return redirect(url_for('contas_fixas.listar'))
 
 
 @bp.route('/excluir/<int:id>', methods=['POST'])
+@login_required
 def excluir(id):
     conta = ContaFixa.query.get_or_404(id)
     db.session.delete(conta)
     db.session.commit()
+    flash('Conta fixa excluída.', 'info')
     return redirect(url_for('contas_fixas.listar'))
 
 
 @bp.route('/lancar-todas', methods=['POST'])
+@login_required
 def lancar_todas():
     mes = int(request.form.get('mes', date.today().month))
     ano = int(request.form.get('ano', date.today().year))

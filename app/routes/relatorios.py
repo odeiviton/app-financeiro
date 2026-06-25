@@ -1,5 +1,6 @@
 from datetime import date
 from flask import Blueprint, render_template, request
+from flask_login import login_required
 from app import db
 from app.models import Transacao, Categoria
 
@@ -7,6 +8,7 @@ bp = Blueprint('relatorios', __name__, url_prefix='/relatorios')
 
 
 @bp.route('/')
+@login_required
 def relatorios():
     ano = request.args.get('ano', type=int, default=date.today().year)
 

@@ -3,10 +3,15 @@ from datetime import datetime, timezone
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
+from flask_login import LoginManager
 from config import config_map
 
 db = SQLAlchemy()
 csrf = CSRFProtect()
+login_manager = LoginManager()
+login_manager.login_view = 'auth.login'
+login_manager.login_message = 'Faça login para acessar.'
+login_manager.login_message_category = 'info'
 
 
 def create_app(config_name='default'):
@@ -17,7 +22,9 @@ def create_app(config_name='default'):
 
     db.init_app(app)
     csrf.init_app(app)
+    login_manager.init_app(app)
 
+    from app.routes.auth import bp as auth_bp
     from app.routes.dashboard import bp as dashboard_bp
     from app.routes.transacoes import bp as transacoes_bp
     from app.routes.categorias import bp as categorias_bp
@@ -27,6 +34,9 @@ def create_app(config_name='default'):
     from app.routes.cartoes import bp as cartoes_bp
     from app.routes.parcelamentos import bp as parcelamentos_bp
 
+    app.register_blueprint(auth_bp)
+    from app.routes.menu import bp as menu_bp
+    app.register_blueprint(menu_bp)
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(transacoes_bp)
     app.register_blueprint(categorias_bp)
@@ -47,12 +57,23 @@ def create_app(config_name='default'):
         return {'categorias_json': json.dumps([c.to_dict() for c in cats])}
 
     with app.app_context():
-        from app.models import Categoria
+        from app.models import Categoria, User
         db.create_all()
         if not Categoria.query.first():
             _seed_categories()
+        if not User.query.first():
+            admin = User(email='admin@email.com', nome='Admin')
+            admin.set_senha('admin123')
+            db.session.add(admin)
+            db.session.commit()
 
     return app
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    from app.models import User
+    return User.query.get(int(user_id))
 
 
 def _seed_categories():

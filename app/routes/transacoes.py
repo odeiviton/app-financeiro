@@ -1,5 +1,6 @@
 from datetime import date
-from flask import Blueprint, render_template, request, redirect, url_for, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask_login import login_required
 from app import db
 from app.models import Transacao, Categoria
 
@@ -7,6 +8,7 @@ bp = Blueprint('transacoes', __name__, url_prefix='/transacoes')
 
 
 @bp.route('/')
+@login_required
 def listar():
     mes = request.args.get('mes', type=int, default=date.today().month)
     ano = request.args.get('ano', type=int, default=date.today().year)
@@ -44,6 +46,7 @@ def listar():
 
 
 @bp.route('/criar', methods=['POST'])
+@login_required
 def criar():
     descricao = request.form.get('descricao', '')
     valor = float(request.form.get('valor', 0))
@@ -60,11 +63,13 @@ def criar():
     )
     db.session.add(transacao)
     db.session.commit()
+    flash('Transação adicionada com sucesso!', 'success')
 
     return redirect(url_for('transacoes.listar', mes=data.month, ano=data.year))
 
 
 @bp.route('/excluir/<int:id>', methods=['POST'])
+@login_required
 def excluir(id):
     transacao = Transacao.query.get_or_404(id)
     mes = transacao.data.month

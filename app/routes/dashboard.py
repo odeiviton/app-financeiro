@@ -1,5 +1,6 @@
 from datetime import datetime, timezone, date
 from flask import Blueprint, render_template
+from flask_login import login_required
 from app import db
 from app.models import Transacao, ContaFixa
 
@@ -7,6 +8,7 @@ bp = Blueprint('dashboard', __name__, url_prefix='/')
 
 
 @bp.route('/')
+@login_required
 def dashboard():
     hoje = date.today()
     mes_atual = hoje.month

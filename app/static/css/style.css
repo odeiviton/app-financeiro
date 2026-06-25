@@ -120,6 +120,22 @@ a:hover { color: var(--primary-hover); }
   color: var(--primary);
   background: var(--primary-light);
 }
+.top-nav .nav-user {
+  display: flex;
+  list-style: none;
+  margin-left: 16px;
+}
+.top-nav .nav-user a {
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.top-nav .nav-user a:hover { color: var(--text-primary); background: var(--bg-card); }
+.dropdown-menu-right { left: auto; right: 0; }
 
 /* === BOTTOM NAV === */
 .bottom-nav {

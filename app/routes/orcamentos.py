@@ -1,5 +1,6 @@
 from datetime import date
-from flask import Blueprint, render_template, request, redirect, url_for
+from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask_login import login_required
 from app import db
 from app.models import Orcamento, Categoria, Transacao
 
@@ -7,6 +8,7 @@ bp = Blueprint('orcamentos', __name__, url_prefix='/orcamentos')
 
 
 @bp.route('/')
+@login_required
 def listar():
     mes = request.args.get('mes', type=int, default=date.today().month)
     ano = request.args.get('ano', type=int, default=date.today().year)
@@ -37,6 +39,7 @@ def listar():
 
 
 @bp.route('/salvar', methods=['POST'])
+@login_required
 def salvar():
     mes = int(request.form.get('mes', date.today().month))
     ano = int(request.form.get('ano', date.today().year))

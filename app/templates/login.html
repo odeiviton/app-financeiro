@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - App Financeiro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="auth-page">
+  <div class="auth-container">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <span>$</span> Finanças
+      </div>
+      <h1>Entrar</h1>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+        <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+      {% endwith %}
+
+      <form action="{{ url_for('auth.login') }}" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" name="email" id="email" placeholder="seu@email.com" required>
+        </div>
+
+        <div class="form-group">
+          <label for="senha">Senha</label>
+          <input type="password" name="senha" id="senha" placeholder="Sua senha" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full">Entrar</button>
+      </form>
+
+      <p class="auth-link">
+        Não tem conta? <a href="{{ url_for('auth.register') }}">Registre-se</a>
+      </p>
+    </div>
+  </div>
+
+  <style>
+    .auth-page {
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .auth-container {
+      width: 100%;
+      max-width: 400px;
+    }
+    .auth-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+    }
+    .auth-logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      color: var(--primary);
+    }
+    .auth-card h1 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      font-size: 1.5rem;
+    }
+    .btn-full {
+      width: 100%;
+      margin-top: 0.5rem;
+    }
+    .auth-link {
+      text-align: center;
+      margin-top: 1.5rem;
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+    }
+    .auth-link a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .auth-link a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</body>
+</html>

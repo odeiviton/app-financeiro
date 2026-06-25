@@ -34,6 +34,16 @@
           </div>
         </li>
       </ul>
+      {% if current_user.is_authenticated %}
+      <ul class="nav-user">
+        <li class="dropdown">
+          <a href="#">{{ current_user.nome }} ▾</a>
+          <div class="dropdown-menu dropdown-menu-right">
+            <a href="{{ url_for('auth.logout') }}">Sair</a>
+          </div>
+        </li>
+      </ul>
+      {% endif %}
     </div>
   </nav>
 
@@ -57,7 +67,7 @@
       <span class="nav-icon">📈</span>
       <span class="nav-label">Relatórios</span>
     </a>
-    <a href="#" onclick="document.querySelector('.dropdown > a')?.click();return false;">
+    <a href="{{ url_for('menu.menu') }}">
       <span class="nav-icon">⚙️</span>
       <span class="nav-label">Menu</span>
     </a>
